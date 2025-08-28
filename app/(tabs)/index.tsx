@@ -1,75 +1,185 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// /app/(tabs)/index.tsx
+import React, { useState } from 'react';
+import { StyleSheet, ScrollView, Dimensions, View } from 'react-native';
+import { Card, Title, ProgressBar, Text, Divider } from 'react-native-paper';
+import { PieChart } from 'react-native-chart-kit';
+import StatusCard from '@/components/StatusCard';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from 'react-native-paper';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function TabOneScreen() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  
+  const [roverData] = useState({
+    battery: 85,
+    connected: true,
+    plantsScanned: 42,
+    healthy: 32,
+    mildInfection: 7,
+    severeInfection: 3,
+    pesticideUsed: 120,
+    temperature: 28,
+    humidity: 65,
+  });
+  const { user, logout } = useAuth();
 
-export default function HomeScreen() {
+  const infectionData = [
+    { name: 'Healthy', population: roverData.healthy, color: colors.healthy || '#4CAF50' },
+    { name: 'Mild', population: roverData.mildInfection, color: colors.mild || '#FFC107' },
+    { name: 'Severe', population: roverData.severeInfection, color: colors.severe || '#F44336' }
+  ];
+
+  const healthyPercentage = Math.round((roverData.healthy / roverData.plantsScanned) * 100);
+  const mildPercentage = Math.round((roverData.mildInfection / roverData.plantsScanned) * 100);
+  const severePercentage = Math.round((roverData.severeInfection / roverData.plantsScanned) * 100);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <><Card style={[styles.card, { backgroundColor: colors.card }]}>
+      <Card.Content>
+        <View style={styles.container}>
+          <Text variant="titleMedium" style={{ color: colors.text }}>
+            👋 Welcome, {user?.name}
+          </Text>
+          <Button
+            mode="outlined"
+            onPress={logout}
+            icon="logout"
+            compact
+          >
+            Logout
+          </Button>
+        </View>
+      </Card.Content>
+    </Card><ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusCard battery={roverData.battery} connected={roverData.connected} />
+
+        {/* Plant Health Overview */}
+        <Card style={[styles.card, { backgroundColor: colors.card }]}>
+          <Card.Content>
+            <Title style={{ color: colors.text, marginBottom: 16 }}>🌱 Plant Health Overview</Title>
+
+            {/* Summary Stats */}
+            <View style={styles.summaryRow}>
+              <View style={[styles.statBox, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
+                <Text variant="titleMedium" style={styles.statNumber}>{roverData.plantsScanned}</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Total Scanned</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
+                <Text variant="titleMedium" style={styles.statNumber}>{healthyPercentage}%</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Healthy</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: 'rgba(255, 193, 7, 0.1)' }]}>
+                <Text variant="titleMedium" style={styles.statNumber}>{mildPercentage}%</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Mild</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: 'rgba(244, 67, 54, 0.1)' }]}>
+                <Text variant="titleMedium" style={styles.statNumber}>{severePercentage}%</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Severe</Text>
+              </View>
+            </View>
+
+            <Divider style={{ marginVertical: 16 }} />
+
+            {/* Infection Chart */}
+            <Title style={{ color: colors.text, marginBottom: 16, textAlign: 'center' }}>Infection Distribution</Title>
+            <PieChart
+              data={infectionData}
+              width={Dimensions.get('window').width - 40}
+              height={180}
+              chartConfig={{
+                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              }}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              style={{ alignSelf: 'center' }} />
+          </Card.Content>
+        </Card>
+
+        {/* Environmental Data */}
+        <Card style={[styles.card, { backgroundColor: colors.card }]}>
+          <Card.Content>
+            <Title style={{ color: colors.text, marginBottom: 16 }}>🌡️ Environmental Data</Title>
+
+            <View style={styles.envRow}>
+              <View style={styles.envItem}>
+                <Text variant="titleLarge" style={{ color: colors.text }}>{roverData.temperature}°C</Text>
+                <Text variant="bodyMedium" style={{ color: colors.text }}>Temperature</Text>
+              </View>
+              <View style={styles.envItem}>
+                <Text variant="titleLarge" style={{ color: colors.text }}>{roverData.humidity}%</Text>
+                <Text variant="bodyMedium" style={{ color: colors.text }}>Humidity</Text>
+              </View>
+            </View>
+          </Card.Content>
+        </Card>
+
+        {/* Spray Usage */}
+        <Card style={[styles.card, { backgroundColor: colors.card }]}>
+          <Card.Content>
+            <Title style={{ color: colors.text, marginBottom: 16 }}>💧 Spray Usage</Title>
+            <Text variant="titleMedium" style={{ marginBottom: 8, color: colors.text }}>
+              Total Used: {roverData.pesticideUsed} ml
+            </Text>
+            <ProgressBar
+              progress={roverData.pesticideUsed / 200}
+              color={colors.healthy || '#4CAF50'}
+              style={{ height: 12, borderRadius: 6 }} />
+            <Text variant="bodySmall" style={{ marginTop: 8, textAlign: 'right', color: colors.text }}>
+              200 ml capacity
+            </Text>
+          </Card.Content>
+        </Card>
+      </ScrollView></>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  card: {
+    marginBottom: 20,
+    borderRadius: 12,
+  },
+  summaryRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16,
+  },
+  statBox: {
     alignItems: 'center',
-    gap: 8,
+    padding: 12,
+    borderRadius: 8,
+    minWidth: 80,
+    flex: 1,
+    margin: 4,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  statNumber: {
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  statLabel: {
+    textAlign: 'center',
   },
+  envRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  envItem: {
+    alignItems: 'center',
+    padding: 16,
+  },
+  Container: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+},
 });
