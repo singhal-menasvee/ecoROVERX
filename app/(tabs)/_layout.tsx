@@ -2,8 +2,6 @@
 import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-
-// Icons (you might need to install these)
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function TabLayout() {
@@ -41,8 +39,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      
     </Tabs>
-    
   );
 }

@@ -8,6 +8,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from 'react-native-paper';
+import VoiceAssistant from '@/components/VoiceAssistant';
 
 export default function TabOneScreen() {
   const colorScheme = useColorScheme();
@@ -37,23 +38,27 @@ export default function TabOneScreen() {
   const severePercentage = Math.round((roverData.severeInfection / roverData.plantsScanned) * 100);
 
   return (
-    <><Card style={[styles.card, { backgroundColor: colors.card }]}>
-      <Card.Content>
-        <View style={styles.container}>
-          <Text variant="titleMedium" style={{ color: colors.text }}>
-            👋 Welcome, {user?.name}
-          </Text>
-          <Button
-            mode="outlined"
-            onPress={logout}
-            icon="logout"
-            compact
-          >
-            Logout
-          </Button>
-        </View>
-      </Card.Content>
-    </Card><ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* User Welcome Card */}
+        <Card style={[styles.card, { backgroundColor: colors.card }]}>
+          <Card.Content>
+            <View style={styles.userContainer}>
+              <Text variant="titleMedium" style={{ color: colors.text }}>
+                👋 Welcome, {user?.name}
+              </Text>
+              <Button
+                mode="outlined"
+                onPress={logout}
+                icon="logout"
+                compact
+              >
+                Logout
+              </Button>
+            </View>
+          </Card.Content>
+        </Card>
+
         <StatusCard battery={roverData.battery} connected={roverData.connected} />
 
         {/* Plant Health Overview */}
@@ -133,7 +138,11 @@ export default function TabOneScreen() {
             </Text>
           </Card.Content>
         </Card>
-      </ScrollView></>
+      </ScrollView>
+
+      {/* Voice Assistant */}
+      <VoiceAssistant />
+    </View>
   );
 }
 
@@ -145,6 +154,11 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 20,
     borderRadius: 12,
+  },
+  userContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   summaryRow: {
     flexDirection: 'row',
@@ -177,9 +191,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
   },
-  Container: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-},
 });
